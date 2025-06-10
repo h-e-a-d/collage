@@ -25,6 +25,7 @@
             border-radius: 15px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             overflow: hidden;
+            margin-top: 20px;
         }
 
         .header {
@@ -98,7 +99,12 @@
 
         .file-upload input[type="file"] {
             position: absolute;
-            left: -9999px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
         }
 
         .workspace {
@@ -140,22 +146,63 @@
             font-size: 14px;
             color: #666;
             user-select: none;
+            transition: all 0.3s ease;
         }
 
         .image-frame.has-image {
             background: none;
             color: transparent;
+            position: relative;
         }
 
         .image-frame:active {
             cursor: grabbing;
         }
 
+        .image-frame.drag-over {
+            border-color: #4a90e2 !important;
+            background-color: #e3f2fd !important;
+            transform: scale(1.02);
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 24px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #ccc;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: #666;
+            z-index: 10;
+            transition: all 0.2s ease;
+            opacity: 0;
+        }
+
+        .image-frame.has-image:hover .remove-btn {
+            opacity: 1;
+        }
+
+        .remove-btn:hover {
+            background: #ff4757;
+            color: white;
+            border-color: #ff4757;
+            transform: scale(1.1);
+        }
+
         .frame-image {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
             transition: transform 0.1s ease;
+            background: #f8f9fa;
         }
 
         .sidebar {
@@ -185,11 +232,16 @@
             border-radius: 6px;
             cursor: pointer;
             border: 2px solid transparent;
-            transition: border-color 0.3s ease;
+            transition: all 0.3s ease;
         }
 
         .image-thumbnail:hover {
             border-color: #4a90e2;
+            transform: scale(1.05);
+        }
+
+        .image-thumbnail:active {
+            transform: scale(0.95);
         }
 
         .layout-options {
@@ -261,17 +313,21 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>Photo Collage Creator</h1>
-            <p>Create beautiful photo collages with customizable layouts</p>
-        </div>
-        
         <div class="controls">
+            <h2 style="width: 100%; margin: 0 0 15px 0; color: #495057; font-size: 1.8em; font-weight: 300;">Photo Collage Creator</h2>
             <div class="control-group">
                 <label for="format">Canvas Format</label>
                 <select id="format">
                     <option value="A4">A4 (210 × 297 mm)</option>
                     <option value="A3">A3 (297 × 420 mm)</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="orientation">Orientation</label>
+                <select id="orientation">
+                    <option value="portrait">Portrait (Vertical)</option>
+                    <option value="landscape">Landscape (Horizontal)</option>
                 </select>
             </div>
             
@@ -285,6 +341,9 @@
                     <option value="6">6 Images</option>
                     <option value="8">8 Images</option>
                     <option value="9">9 Images</option>
+                    <option value="10">10 Images</option>
+                    <option value="11">11 Images</option>
+                    <option value="12">12 Images</option>
                 </select>
             </div>
             
@@ -310,7 +369,15 @@
             
             <div class="sidebar">
                 <h3>Uploaded Images</h3>
+                <p style="font-size: 0.85em; color: #6c757d; margin-bottom: 10px;">Click or drag images to frames</p>
                 <div class="image-grid" id="imageGrid"></div>
+                
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0; font-size: 0.85em; color: #495057;">
+                    <strong>Frame Controls:</strong><br>
+                    • Click & drag to pan images<br>
+                    • Scroll wheel to zoom in/out<br>
+                    • Hover over image and click × to remove
+                </div>
                 
                 <h3>Layout Options</h3>
                 <div class="layout-options" id="layoutOptions"></div>
@@ -323,42 +390,70 @@
     <script>
         class CollageCreator {
             constructor() {
+                console.log('CollageCreator constructor started');
                 this.canvas = document.getElementById('collageCanvas');
                 this.images = [];
                 this.frames = [];
                 this.currentLayout = 0;
                 this.borderThickness = 5;
                 this.format = 'A4';
+                this.orientation = 'portrait';
                 this.imageCount = 4;
                 this.dragState = null;
+                
+                console.log('Canvas element:', this.canvas);
                 
                 this.initializeEventListeners();
                 this.updateCanvas();
                 this.generateLayoutOptions();
+                console.log('CollageCreator constructor completed');
             }
             
             initializeEventListeners() {
+                // Format change
                 document.getElementById('format').addEventListener('change', (e) => {
                     this.format = e.target.value;
                     this.updateCanvas();
                 });
                 
+                // Orientation change
+                document.getElementById('orientation').addEventListener('change', (e) => {
+                    this.orientation = e.target.value;
+                    this.updateCanvas();
+                });
+                
+                // Image count change
                 document.getElementById('imageCount').addEventListener('change', (e) => {
                     this.imageCount = parseInt(e.target.value);
                     this.updateCanvas();
                     this.generateLayoutOptions();
                 });
                 
+                // Border thickness change
                 document.getElementById('borderThickness').addEventListener('input', (e) => {
                     this.borderThickness = parseInt(e.target.value);
                     document.getElementById('borderValue').textContent = `${this.borderThickness}px`;
                     this.updateFrames();
                 });
                 
-                document.getElementById('imageUpload').addEventListener('change', (e) => {
-                    this.handleImageUpload(e.files);
+                // File upload
+                const fileInput = document.getElementById('imageUpload');
+                fileInput.addEventListener('change', (e) => {
+                    console.log('File input changed:', e.target.files);
+                    if (e.target.files && e.target.files.length > 0) {
+                        this.handleImageUpload(e.target.files);
+                    }
                 });
                 
+                // Make the label clickable
+                const fileUploadDiv = document.querySelector('.file-upload');
+                fileUploadDiv.addEventListener('click', (e) => {
+                    if (e.target !== fileInput) {
+                        fileInput.click();
+                    }
+                });
+                
+                // Download button
                 document.getElementById('downloadBtn').addEventListener('click', () => {
                     this.downloadCollage();
                 });
@@ -368,14 +463,36 @@
                 this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
                 this.canvas.addEventListener('mouseup', () => this.handleMouseUp());
                 this.canvas.addEventListener('wheel', (e) => this.handleWheel(e));
+                
+                // Prevent default drag behaviors on canvas
+                this.canvas.addEventListener('dragover', (e) => e.preventDefault());
+                this.canvas.addEventListener('drop', (e) => e.preventDefault());
             }
             
             getCanvasDimensions() {
-                const baseWidth = this.format === 'A4' ? 800 : 1000;
-                const aspectRatio = this.format === 'A4' ? 297/210 : 420/297;
+                let baseWidth, baseHeight;
+                
+                if (this.format === 'A4') {
+                    if (this.orientation === 'portrait') {
+                        baseWidth = 800;
+                        baseHeight = 800 * (297/210); // A4 portrait ratio
+                    } else {
+                        baseWidth = 1000;
+                        baseHeight = 1000 * (210/297); // A4 landscape ratio
+                    }
+                } else { // A3
+                    if (this.orientation === 'portrait') {
+                        baseWidth = 1000;
+                        baseHeight = 1000 * (420/297); // A3 portrait ratio
+                    } else {
+                        baseWidth = 1200;
+                        baseHeight = 1200 * (297/420); // A3 landscape ratio
+                    }
+                }
+                
                 return {
                     width: baseWidth,
-                    height: baseWidth * aspectRatio
+                    height: baseHeight
                 };
             }
             
@@ -387,6 +504,14 @@
             }
             
             generateFrames() {
+                // Save existing images and their transforms before clearing frames
+                const existingFrameData = this.frames.map(frame => ({
+                    image: frame.image,
+                    scale: frame.scale,
+                    offsetX: frame.offsetX,
+                    offsetY: frame.offsetY
+                })).filter(data => data.image !== null);
+                
                 // Clear existing frames
                 this.canvas.innerHTML = '';
                 this.frames = [];
@@ -405,13 +530,44 @@
                     const width = frameData.width * dimensions.width;
                     const height = frameData.height * dimensions.height;
                     
+                    frame.style.position = 'absolute';
                     frame.style.left = `${x + this.borderThickness}px`;
                     frame.style.top = `${y + this.borderThickness}px`;
                     frame.style.width = `${width - 2 * this.borderThickness}px`;
                     frame.style.height = `${height - 2 * this.borderThickness}px`;
                     frame.style.borderWidth = `${this.borderThickness}px`;
                     
-                    frame.textContent = `Image ${index + 1}`;
+                    frame.textContent = `Drop Image ${index + 1}`;
+                    
+                    // Add drag and drop event listeners
+                    frame.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = 'copy';
+                        frame.style.borderColor = '#4a90e2';
+                        frame.style.backgroundColor = '#e3f2fd';
+                        frame.classList.add('drag-over');
+                    });
+                    
+                    frame.addEventListener('dragleave', (e) => {
+                        frame.style.borderColor = '#ccc';
+                        frame.style.backgroundColor = frame.classList.contains('has-image') ? '' : '#f0f0f0';
+                        frame.classList.remove('drag-over');
+                    });
+                    
+                    frame.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        frame.style.borderColor = '#ccc';
+                        frame.style.backgroundColor = frame.classList.contains('has-image') ? '' : '#f0f0f0';
+                        frame.classList.remove('drag-over');
+                        
+                        const imageIndex = e.dataTransfer.getData('text/plain');
+                        if (imageIndex !== '' && !isNaN(imageIndex)) {
+                            const imgIdx = parseInt(imageIndex);
+                            if (imgIdx >= 0 && imgIdx < this.images.length) {
+                                this.assignImageToSpecificFrame(this.images[imgIdx], imgIdx, index);
+                            }
+                        }
+                    });
                     
                     this.canvas.appendChild(frame);
                     this.frames.push({
@@ -422,25 +578,45 @@
                         offsetY: 0
                     });
                 });
+                
+                // Restore existing images to available frames with their transforms
+                existingFrameData.forEach((data, index) => {
+                    if (index < this.frames.length) {
+                        const frame = this.frames[index];
+                        frame.image = data.image;
+                        frame.scale = data.scale;
+                        frame.offsetX = data.offsetX;
+                        frame.offsetY = data.offsetY;
+                        
+                        frame.element.innerHTML = '';
+                        frame.element.classList.add('has-image');
+                        frame.element.textContent = '';
+                        
+                        const frameImg = document.createElement('img');
+                        frameImg.src = data.image.src;
+                        frameImg.className = 'frame-image';
+                        frameImg.draggable = false;
+                        
+                        // Add remove button
+                        const removeBtn = document.createElement('div');
+                        removeBtn.className = 'remove-btn';
+                        removeBtn.innerHTML = '×';
+                        removeBtn.title = 'Remove image';
+                        removeBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            this.removeImageFromFrame(frame);
+                        });
+                        
+                        frame.element.appendChild(frameImg);
+                        frame.element.appendChild(removeBtn);
+                        this.updateImageTransform(frame);
+                    }
+                });
             }
             
             updateFrames() {
-                this.frames.forEach((frame, index) => {
-                    const element = frame.element;
-                    const rect = element.getBoundingClientRect();
-                    const canvasRect = this.canvas.getBoundingClientRect();
-                    
-                    const x = (rect.left - canvasRect.left) - this.borderThickness;
-                    const y = (rect.top - canvasRect.top) - this.borderThickness;
-                    const width = rect.width + 2 * this.borderThickness;
-                    const height = rect.height + 2 * this.borderThickness;
-                    
-                    element.style.left = `${x + this.borderThickness}px`;
-                    element.style.top = `${y + this.borderThickness}px`;
-                    element.style.width = `${width - 2 * this.borderThickness}px`;
-                    element.style.height = `${height - 2 * this.borderThickness}px`;
-                    element.style.borderWidth = `${this.borderThickness}px`;
-                });
+                // Simply regenerate frames with correct border thickness
+                this.generateFrames();
             }
             
             getLayoutPatterns() {
@@ -562,6 +738,104 @@
                             { x: 0.7, y: 0.7, width: 0.15, height: 0.3 },
                             { x: 0.85, y: 0.7, width: 0.15, height: 0.3 }
                         ]
+                    ],
+                    10: [
+                        [
+                            { x: 0, y: 0, width: 0.6, height: 0.6 },
+                            { x: 0.6, y: 0, width: 0.2, height: 0.2 },
+                            { x: 0.8, y: 0, width: 0.2, height: 0.2 },
+                            { x: 0.6, y: 0.2, width: 0.2, height: 0.2 },
+                            { x: 0.8, y: 0.2, width: 0.2, height: 0.2 },
+                            { x: 0.6, y: 0.4, width: 0.4, height: 0.2 },
+                            { x: 0, y: 0.6, width: 0.2, height: 0.4 },
+                            { x: 0.2, y: 0.6, width: 0.2, height: 0.4 },
+                            { x: 0.4, y: 0.6, width: 0.3, height: 0.4 },
+                            { x: 0.7, y: 0.6, width: 0.3, height: 0.4 }
+                        ],
+                        [
+                            { x: 0, y: 0, width: 0.5, height: 0.4 },
+                            { x: 0.5, y: 0, width: 0.25, height: 0.2 },
+                            { x: 0.75, y: 0, width: 0.25, height: 0.2 },
+                            { x: 0.5, y: 0.2, width: 0.5, height: 0.2 },
+                            { x: 0, y: 0.4, width: 0.2, height: 0.3 },
+                            { x: 0.2, y: 0.4, width: 0.2, height: 0.3 },
+                            { x: 0.4, y: 0.4, width: 0.2, height: 0.3 },
+                            { x: 0.6, y: 0.4, width: 0.2, height: 0.3 },
+                            { x: 0.8, y: 0.4, width: 0.2, height: 0.3 },
+                            { x: 0, y: 0.7, width: 1, height: 0.3 }
+                        ]
+                    ],
+                    11: [
+                        [
+                            { x: 0, y: 0, width: 0.5, height: 0.5 },
+                            { x: 0.5, y: 0, width: 0.25, height: 0.25 },
+                            { x: 0.75, y: 0, width: 0.25, height: 0.25 },
+                            { x: 0.5, y: 0.25, width: 0.5, height: 0.25 },
+                            { x: 0, y: 0.5, width: 0.2, height: 0.25 },
+                            { x: 0.2, y: 0.5, width: 0.2, height: 0.25 },
+                            { x: 0.4, y: 0.5, width: 0.2, height: 0.25 },
+                            { x: 0.6, y: 0.5, width: 0.2, height: 0.25 },
+                            { x: 0.8, y: 0.5, width: 0.2, height: 0.25 },
+                            { x: 0, y: 0.75, width: 0.5, height: 0.25 },
+                            { x: 0.5, y: 0.75, width: 0.5, height: 0.25 }
+                        ],
+                        [
+                            { x: 0, y: 0, width: 0.4, height: 0.6 },
+                            { x: 0.4, y: 0, width: 0.3, height: 0.3 },
+                            { x: 0.7, y: 0, width: 0.3, height: 0.3 },
+                            { x: 0.4, y: 0.3, width: 0.6, height: 0.3 },
+                            { x: 0, y: 0.6, width: 0.25, height: 0.2 },
+                            { x: 0.25, y: 0.6, width: 0.25, height: 0.2 },
+                            { x: 0.5, y: 0.6, width: 0.25, height: 0.2 },
+                            { x: 0.75, y: 0.6, width: 0.25, height: 0.2 },
+                            { x: 0, y: 0.8, width: 0.2, height: 0.2 },
+                            { x: 0.2, y: 0.8, width: 0.4, height: 0.2 },
+                            { x: 0.6, y: 0.8, width: 0.4, height: 0.2 }
+                        ]
+                    ],
+                    12: [
+                        [
+                            { x: 0, y: 0, width: 0.33, height: 0.25 },
+                            { x: 0.33, y: 0, width: 0.34, height: 0.25 },
+                            { x: 0.67, y: 0, width: 0.33, height: 0.25 },
+                            { x: 0, y: 0.25, width: 0.33, height: 0.25 },
+                            { x: 0.33, y: 0.25, width: 0.34, height: 0.25 },
+                            { x: 0.67, y: 0.25, width: 0.33, height: 0.25 },
+                            { x: 0, y: 0.5, width: 0.33, height: 0.25 },
+                            { x: 0.33, y: 0.5, width: 0.34, height: 0.25 },
+                            { x: 0.67, y: 0.5, width: 0.33, height: 0.25 },
+                            { x: 0, y: 0.75, width: 0.33, height: 0.25 },
+                            { x: 0.33, y: 0.75, width: 0.34, height: 0.25 },
+                            { x: 0.67, y: 0.75, width: 0.33, height: 0.25 }
+                        ],
+                        [
+                            { x: 0, y: 0, width: 0.5, height: 0.4 },
+                            { x: 0.5, y: 0, width: 0.25, height: 0.2 },
+                            { x: 0.75, y: 0, width: 0.25, height: 0.2 },
+                            { x: 0.5, y: 0.2, width: 0.5, height: 0.2 },
+                            { x: 0, y: 0.4, width: 0.2, height: 0.3 },
+                            { x: 0.2, y: 0.4, width: 0.2, height: 0.3 },
+                            { x: 0.4, y: 0.4, width: 0.2, height: 0.3 },
+                            { x: 0.6, y: 0.4, width: 0.2, height: 0.3 },
+                            { x: 0.8, y: 0.4, width: 0.2, height: 0.3 },
+                            { x: 0, y: 0.7, width: 0.25, height: 0.3 },
+                            { x: 0.25, y: 0.7, width: 0.25, height: 0.3 },
+                            { x: 0.5, y: 0.7, width: 0.5, height: 0.3 }
+                        ],
+                        [
+                            { x: 0, y: 0, width: 0.25, height: 0.33 },
+                            { x: 0.25, y: 0, width: 0.25, height: 0.33 },
+                            { x: 0.5, y: 0, width: 0.25, height: 0.33 },
+                            { x: 0.75, y: 0, width: 0.25, height: 0.33 },
+                            { x: 0, y: 0.33, width: 0.25, height: 0.34 },
+                            { x: 0.25, y: 0.33, width: 0.25, height: 0.34 },
+                            { x: 0.5, y: 0.33, width: 0.25, height: 0.34 },
+                            { x: 0.75, y: 0.33, width: 0.25, height: 0.34 },
+                            { x: 0, y: 0.67, width: 0.25, height: 0.33 },
+                            { x: 0.25, y: 0.67, width: 0.25, height: 0.33 },
+                            { x: 0.5, y: 0.67, width: 0.25, height: 0.33 },
+                            { x: 0.75, y: 0.67, width: 0.25, height: 0.33 }
+                        ]
                     ]
                 };
             }
@@ -603,23 +877,36 @@
             }
             
             handleImageUpload(files) {
-                Array.from(files).forEach(file => {
+                console.log('Handling image upload:', files.length, 'files');
+                Array.from(files).forEach((file, index) => {
+                    console.log('Processing file:', file.name, file.type);
                     if (file.type.startsWith('image/')) {
                         const reader = new FileReader();
                         reader.onload = (e) => {
+                            console.log('File loaded successfully');
                             const img = new Image();
                             img.onload = () => {
+                                console.log('Image created:', img.src.substring(0, 50) + '...');
                                 this.images.push(img);
                                 this.updateImageGrid();
                             };
+                            img.onerror = (error) => {
+                                console.error('Error loading image:', error);
+                            };
                             img.src = e.target.result;
                         };
+                        reader.onerror = (error) => {
+                            console.error('Error reading file:', error);
+                        };
                         reader.readAsDataURL(file);
+                    } else {
+                        console.log('Skipping non-image file:', file.name);
                     }
                 });
             }
             
             updateImageGrid() {
+                console.log('Updating image grid with', this.images.length, 'images');
                 const grid = document.getElementById('imageGrid');
                 grid.innerHTML = '';
                 
@@ -628,8 +915,23 @@
                     thumbnail.src = img.src;
                     thumbnail.className = 'image-thumbnail';
                     thumbnail.draggable = true;
+                    thumbnail.dataset.imageIndex = index;
+                    
+                    // Add drag start event
+                    thumbnail.addEventListener('dragstart', (e) => {
+                        console.log('Drag started for image', index);
+                        e.dataTransfer.setData('text/plain', index.toString());
+                        e.dataTransfer.effectAllowed = 'copy';
+                        thumbnail.style.opacity = '0.5';
+                    });
+                    
+                    thumbnail.addEventListener('dragend', (e) => {
+                        console.log('Drag ended for image', index);
+                        thumbnail.style.opacity = '1';
+                    });
                     
                     thumbnail.addEventListener('click', () => {
+                        console.log('Thumbnail clicked for image', index);
                         this.assignImageToFrame(img, index);
                     });
                     
@@ -638,24 +940,69 @@
             }
             
             assignImageToFrame(img, imgIndex) {
+                console.log('Assigning image to first available frame');
                 const emptyFrame = this.frames.find(frame => !frame.image);
                 if (emptyFrame) {
-                    emptyFrame.image = img;
-                    emptyFrame.scale = 1;
-                    emptyFrame.offsetX = 0;
-                    emptyFrame.offsetY = 0;
-                    
-                    emptyFrame.element.innerHTML = '';
-                    emptyFrame.element.classList.add('has-image');
-                    
-                    const frameImg = document.createElement('img');
-                    frameImg.src = img.src;
-                    frameImg.className = 'frame-image';
-                    frameImg.draggable = false;
-                    
-                    emptyFrame.element.appendChild(frameImg);
-                    this.updateImageTransform(emptyFrame);
+                    this.setImageToFrame(img, emptyFrame);
+                } else {
+                    console.log('No empty frames available');
                 }
+            }
+            
+            assignImageToSpecificFrame(img, imgIndex, frameIndex) {
+                console.log('Assigning image', imgIndex, 'to specific frame', frameIndex);
+                if (frameIndex < this.frames.length) {
+                    this.setImageToFrame(img, this.frames[frameIndex]);
+                } else {
+                    console.log('Invalid frame index:', frameIndex);
+                }
+            }
+            
+            setImageToFrame(img, frame) {
+                console.log('Setting image to frame');
+                frame.image = img;
+                frame.scale = 1;
+                frame.offsetX = 0;
+                frame.offsetY = 0;
+                
+                frame.element.innerHTML = '';
+                frame.element.classList.add('has-image');
+                frame.element.textContent = '';
+                
+                const frameImg = document.createElement('img');
+                frameImg.src = img.src;
+                frameImg.className = 'frame-image';
+                frameImg.draggable = false;
+                
+                // Add remove button
+                const removeBtn = document.createElement('div');
+                removeBtn.className = 'remove-btn';
+                removeBtn.innerHTML = '×';
+                removeBtn.title = 'Remove image';
+                removeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.removeImageFromFrame(frame);
+                });
+                
+                frame.element.appendChild(frameImg);
+                frame.element.appendChild(removeBtn);
+                this.updateImageTransform(frame);
+                console.log('Image successfully set to frame');
+            }
+            
+            removeImageFromFrame(frame) {
+                console.log('Removing image from frame');
+                frame.image = null;
+                frame.scale = 1;
+                frame.offsetX = 0;
+                frame.offsetY = 0;
+                
+                frame.element.innerHTML = '';
+                frame.element.classList.remove('has-image');
+                
+                const frameIndex = this.frames.indexOf(frame);
+                frame.element.textContent = `Drop Image ${frameIndex + 1}`;
+                console.log('Image removed from frame');
             }
             
             updateImageTransform(frame) {
@@ -666,6 +1013,11 @@
             }
             
             handleMouseDown(e) {
+                // Don't start dragging if clicking on remove button
+                if (e.target.classList.contains('remove-btn')) {
+                    return;
+                }
+                
                 const frame = e.target.closest('.image-frame');
                 if (frame && frame.classList.contains('has-image')) {
                     this.dragState = {
@@ -697,6 +1049,11 @@
             }
             
             handleWheel(e) {
+                // Don't zoom if hovering over remove button
+                if (e.target.classList.contains('remove-btn')) {
+                    return;
+                }
+                
                 const frame = e.target.closest('.image-frame');
                 if (frame && frame.classList.contains('has-image')) {
                     e.preventDefault();
@@ -759,7 +1116,7 @@
                 
                 // Download
                 const link = document.createElement('a');
-                link.download = `collage_${this.format}_${Date.now()}.png`;
+                link.download = `collage_${this.format}_${this.orientation}_${Date.now()}.png`;
                 link.href = exportCanvas.toDataURL();
                 link.click();
             }
@@ -767,7 +1124,14 @@
         
         // Initialize the application
         document.addEventListener('DOMContentLoaded', () => {
-            new CollageCreator();
+            console.log('DOM loaded, initializing CollageCreator');
+            try {
+                const collageApp = new CollageCreator();
+                console.log('CollageCreator initialized successfully');
+                window.collageApp = collageApp; // Make it accessible for debugging
+            } catch (error) {
+                console.error('Error initializing CollageCreator:', error);
+            }
         });
     </script>
 </body>
