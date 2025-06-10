@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Collage Creator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #4a90e2, #357abd);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.9em;
+        }
+
+        select, input[type="range"], input[type="file"] {
+            padding: 8px 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #4a90e2;
+        }
+
+        input[type="range"] {
+            width: 150px;
+            accent-color: #4a90e2;
+        }
+
+        .file-upload {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            background: #4a90e2;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .file-upload:hover {
+            background: #357abd;
+        }
+
+        .file-upload input[type="file"] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .workspace {
+            display: flex;
+            gap: 20px;
+            padding: 25px;
+            min-height: 600px;
+        }
+
+        .canvas-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .collage-canvas {
+            background: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            cursor: crosshair;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .image-frame {
+            position: absolute;
+            background: #f0f0f0;
+            overflow: hidden;
+            cursor: grab;
+            border: 2px solid #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #666;
+            user-select: none;
+        }
+
+        .image-frame.has-image {
+            background: none;
+            color: transparent;
+        }
+
+        .image-frame:active {
+            cursor: grabbing;
+        }
+
+        .frame-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.1s ease;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .sidebar h3 {
+            margin-bottom: 15px;
+            color: #495057;
+            font-size: 1.1em;
+        }
+
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .image-thumbnail {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border-color 0.3s ease;
+        }
+
+        .image-thumbnail:hover {
+            border-color: #4a90e2;
+        }
+
+        .layout-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .layout-option {
+            aspect-ratio: 1;
+            background: #dee2e6;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .layout-option:hover {
+            border-color: #4a90e2;
+            transform: scale(1.05);
+        }
+
+        .layout-option.active {
+            border-color: #4a90e2;
+            background: #e3f2fd;
+        }
+
+        .value-display {
+            font-size: 0.8em;
+            color: #6c757d;
+            margin-top: 2px;
+        }
+
+        .download-btn {
+            width: 100%;
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .download-btn:hover {
+            background: #218838;
+        }
+
+        @media (max-width: 768px) {
+            .workspace {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Photo Collage Creator</h1>
+            <p>Create beautiful photo collages with customizable layouts</p>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="format">Canvas Format</label>
+                <select id="format">
+                    <option value="A4">A4 (210 × 297 mm)</option>
+                    <option value="A3">A3 (297 × 420 mm)</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="imageCount">Number of Images</label>
+                <select id="imageCount">
+                    <option value="1">1 Image</option>
+                    <option value="2">2 Images</option>
+                    <option value="3">3 Images</option>
+                    <option value="4" selected>4 Images</option>
+                    <option value="6">6 Images</option>
+                    <option value="8">8 Images</option>
+                    <option value="9">9 Images</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="borderThickness">Border Thickness</label>
+                <input type="range" id="borderThickness" min="0" max="20" value="5">
+                <div class="value-display" id="borderValue">5px</div>
+            </div>
+            
+            <div class="control-group">
+                <label>Upload Images</label>
+                <div class="file-upload">
+                    <input type="file" id="imageUpload" multiple accept="image/*">
+                    Choose Files
+                </div>
+            </div>
+        </div>
+        
+        <div class="workspace">
+            <div class="canvas-container">
+                <div class="collage-canvas" id="collageCanvas"></div>
+            </div>
+            
+            <div class="sidebar">
+                <h3>Uploaded Images</h3>
+                <div class="image-grid" id="imageGrid"></div>
+                
+                <h3>Layout Options</h3>
+                <div class="layout-options" id="layoutOptions"></div>
+                
+                <button class="download-btn" id="downloadBtn">Download Collage</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class CollageCreator {
+            constructor() {
+                this.canvas = document.getElementById('collageCanvas');
+                this.images = [];
+                this.frames = [];
+                this.currentLayout = 0;
+                this.borderThickness = 5;
+                this.format = 'A4';
+                this.imageCount = 4;
+                this.dragState = null;
+                
+                this.initializeEventListeners();
+                this.updateCanvas();
+                this.generateLayoutOptions();
+            }
+            
+            initializeEventListeners() {
+                document.getElementById('format').addEventListener('change', (e) => {
+                    this.format = e.target.value;
+                    this.updateCanvas();
+                });
+                
+                document.getElementById('imageCount').addEventListener('change', (e) => {
+                    this.imageCount = parseInt(e.target.value);
+                    this.updateCanvas();
+                    this.generateLayoutOptions();
+                });
+                
+                document.getElementById('borderThickness').addEventListener('input', (e) => {
+                    this.borderThickness = parseInt(e.target.value);
+                    document.getElementById('borderValue').textContent = `${this.borderThickness}px`;
+                    this.updateFrames();
+                });
+                
+                document.getElementById('imageUpload').addEventListener('change', (e) => {
+                    this.handleImageUpload(e.files);
+                });
+                
+                document.getElementById('downloadBtn').addEventListener('click', () => {
+                    this.downloadCollage();
+                });
+                
+                // Canvas event listeners for pan and zoom
+                this.canvas.addEventListener('mousedown', (e) => this.handleMouseDown(e));
+                this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+                this.canvas.addEventListener('mouseup', () => this.handleMouseUp());
+                this.canvas.addEventListener('wheel', (e) => this.handleWheel(e));
+            }
+            
+            getCanvasDimensions() {
+                const baseWidth = this.format === 'A4' ? 800 : 1000;
+                const aspectRatio = this.format === 'A4' ? 297/210 : 420/297;
+                return {
+                    width: baseWidth,
+                    height: baseWidth * aspectRatio
+                };
+            }
+            
+            updateCanvas() {
+                const dimensions = this.getCanvasDimensions();
+                this.canvas.style.width = `${dimensions.width}px`;
+                this.canvas.style.height = `${dimensions.height}px`;
+                this.generateFrames();
+            }
+            
+            generateFrames() {
+                // Clear existing frames
+                this.canvas.innerHTML = '';
+                this.frames = [];
+                
+                const dimensions = this.getCanvasDimensions();
+                const layouts = this.getLayoutPatterns();
+                const pattern = layouts[this.imageCount][this.currentLayout] || layouts[this.imageCount][0];
+                
+                pattern.forEach((frameData, index) => {
+                    const frame = document.createElement('div');
+                    frame.className = 'image-frame';
+                    frame.dataset.index = index;
+                    
+                    const x = frameData.x * dimensions.width;
+                    const y = frameData.y * dimensions.height;
+                    const width = frameData.width * dimensions.width;
+                    const height = frameData.height * dimensions.height;
+                    
+                    frame.style.left = `${x + this.borderThickness}px`;
+                    frame.style.top = `${y + this.borderThickness}px`;
+                    frame.style.width = `${width - 2 * this.borderThickness}px`;
+                    frame.style.height = `${height - 2 * this.borderThickness}px`;
+                    frame.style.borderWidth = `${this.borderThickness}px`;
+                    
+                    frame.textContent = `Image ${index + 1}`;
+                    
+                    this.canvas.appendChild(frame);
+                    this.frames.push({
+                        element: frame,
+                        image: null,
+                        scale: 1,
+                        offsetX: 0,
+                        offsetY: 0
+                    });
+                });
+            }
+            
+            updateFrames() {
+                this.frames.forEach((frame, index) => {
+                    const element = frame.element;
+                    const rect = element.getBoundingClientRect();
+                    const canvasRect = this.canvas.getBoundingClientRect();
+                    
+                    const x = (rect.left - canvasRect.left) - this.borderThickness;
+                    const y = (rect.top - canvasRect.top) - this.borderThickness;
+                    const width = rect.width + 2 * this.borderThickness;
+                    const height = rect.height + 2 * this.borderThickness;
+                    
+                    element.style.left = `${x + this.borderThickness}px`;
+                    element.style.top = `${y + this.borderThickness}px`;
+                    element.style.width = `${width - 2 * this.borderThickness}px`;
+                    element.style.height = `${height - 2 * this.borderThickness}px`;
+                    element.style.borderWidth = `${this.borderThickness}px`;
+                });
+            }
+            
+            getLayoutPatterns() {
+                return {
+                    1: [
+                        [{ x: 0, y: 0, width: 1, height: 1 }]
+                    ],
+                    2: [
+                        [
+                            { x: 0, y: 0, width: 0.7, height: 1 },
+                            { x: 0.7, y: 0, width: 0.3, height: 1 }
+                        ],
+                        [
+                            { x: 0, y: 0, width: 1, height: 0.6 },
+                            { x: 0, y: 0.6, width: 1, height: 0.4 }
+                        ],
+                        [
+                            { x: 0, y: 0, width: 0.3, height: 1 },
+                            { x: 0.3, y: 0, width: 0.7, height: 1 }
+                        ]
+                    ],
+                    3: [
+                        [
+                            { x: 0, y: 0, width: 0.6, height: 0.7 },
+                            { x: 0.6, y: 0, width: 0.4, height: 0.4 },
+                            { x: 0.6, y: 0.4, width: 0.4, height: 0.6 }
+                        ],
+                        [
+                            { x: 0, y: 0, width: 1, height: 0.4 },
+                            { x: 0, y: 0.4, width: 0.5, height: 0.6 },
+                            { x: 0.5, y: 0.4, width: 0.5, height: 0.6 }
+                        ],
+                        [
+                            { x: 0, y: 0, width: 0.4, height: 0.6 },
+                            { x: 0, y: 0.6, width: 0.4, height: 0.4 },
+                            { x: 0.4, y: 0, width: 0.6, height: 1 }
+                        ]
+                    ],
+                    4: [
+                        [
+                            { x: 0, y: 0, width: 0.6, height: 0.6 },
+                            { x: 0.6, y: 0, width: 0.4, height: 0.3 },
+                            { x: 0.6, y: 0.3, width: 0.4, height: 0.3 },
+                            { x: 0, y: 0.6, width: 1, height: 0.4 }
+                        ],
+                        [
+                            { x: 0, y: 0, width: 1, height: 0.35 },
+                            { x: 0, y: 0.35, width: 0.3, height: 0.65 },
+                            { x: 0.3, y: 0.35, width: 0.45, height: 0.65 },
+                            { x: 0.75, y: 0.35, width: 0.25, height: 0.65 }
+                        ],
+                        [
+                            { x: 0, y: 0, width: 0.35, height: 0.5 },
+                            { x: 0.35, y: 0, width: 0.65, height: 0.5 },
+                            { x: 0, y: 0.5, width: 0.5, height: 0.5 },
+                            { x: 0.5, y: 0.5, width: 0.5, height: 0.5 }
+                        ]
+                    ],
+                    6: [
+                        [
+                            { x: 0, y: 0, width: 0.5, height: 0.6 },
+                            { x: 0.5, y: 0, width: 0.25, height: 0.3 },
+                            { x: 0.75, y: 0, width: 0.25, height: 0.3 },
+                            { x: 0.5, y: 0.3, width: 0.5, height: 0.3 },
+                            { x: 0, y: 0.6, width: 0.4, height: 0.4 },
+                            { x: 0.4, y: 0.6, width: 0.6, height: 0.4 }
+                        ],
+                        [
+                            { x: 0, y: 0, width: 0.4, height: 1 },
+                            { x: 0.4, y: 0, width: 0.3, height: 0.33 },
+                            { x: 0.7, y: 0, width: 0.3, height: 0.33 },
+                            { x: 0.4, y: 0.33, width: 0.6, height: 0.34 },
+                            { x: 0.4, y: 0.67, width: 0.3, height: 0.33 },
+                            { x: 0.7, y: 0.67, width: 0.3, height: 0.33 }
+                        ]
+                    ],
+                    8: [
+                        [
+                            { x: 0, y: 0, width: 0.4, height: 0.6 },
+                            { x: 0.4, y: 0, width: 0.3, height: 0.3 },
+                            { x: 0.7, y: 0, width: 0.3, height: 0.3 },
+                            { x: 0.4, y: 0.3, width: 0.6, height: 0.3 },
+                            { x: 0, y: 0.6, width: 0.25, height: 0.4 },
+                            { x: 0.25, y: 0.6, width: 0.25, height: 0.4 },
+                            { x: 0.5, y: 0.6, width: 0.25, height: 0.4 },
+                            { x: 0.75, y: 0.6, width: 0.25, height: 0.4 }
+                        ],
+                        [
+                            { x: 0, y: 0, width: 0.6, height: 0.4 },
+                            { x: 0.6, y: 0, width: 0.2, height: 0.2 },
+                            { x: 0.8, y: 0, width: 0.2, height: 0.2 },
+                            { x: 0.6, y: 0.2, width: 0.2, height: 0.2 },
+                            { x: 0.8, y: 0.2, width: 0.2, height: 0.2 },
+                            { x: 0, y: 0.4, width: 0.3, height: 0.6 },
+                            { x: 0.3, y: 0.4, width: 0.35, height: 0.6 },
+                            { x: 0.65, y: 0.4, width: 0.35, height: 0.6 }
+                        ]
+                    ],
+                    9: [
+                        [
+                            { x: 0, y: 0, width: 0.5, height: 0.5 },
+                            { x: 0.5, y: 0, width: 0.25, height: 0.25 },
+                            { x: 0.75, y: 0, width: 0.25, height: 0.25 },
+                            { x: 0.5, y: 0.25, width: 0.25, height: 0.25 },
+                            { x: 0.75, y: 0.25, width: 0.25, height: 0.25 },
+                            { x: 0, y: 0.5, width: 0.3, height: 0.5 },
+                            { x: 0.3, y: 0.5, width: 0.35, height: 0.5 },
+                            { x: 0.65, y: 0.5, width: 0.35, height: 0.25 },
+                            { x: 0.65, y: 0.75, width: 0.35, height: 0.25 }
+                        ],
+                        [
+                            { x: 0, y: 0, width: 0.4, height: 0.7 },
+                            { x: 0.4, y: 0, width: 0.3, height: 0.35 },
+                            { x: 0.7, y: 0, width: 0.3, height: 0.35 },
+                            { x: 0.4, y: 0.35, width: 0.6, height: 0.35 },
+                            { x: 0, y: 0.7, width: 0.25, height: 0.3 },
+                            { x: 0.25, y: 0.7, width: 0.25, height: 0.3 },
+                            { x: 0.5, y: 0.7, width: 0.2, height: 0.3 },
+                            { x: 0.7, y: 0.7, width: 0.15, height: 0.3 },
+                            { x: 0.85, y: 0.7, width: 0.15, height: 0.3 }
+                        ]
+                    ]
+                };
+            }
+            
+            generateLayoutOptions() {
+                const layoutContainer = document.getElementById('layoutOptions');
+                layoutContainer.innerHTML = '';
+                
+                const layouts = this.getLayoutPatterns()[this.imageCount];
+                if (!layouts) return;
+                
+                layouts.forEach((layout, index) => {
+                    const option = document.createElement('div');
+                    option.className = 'layout-option';
+                    if (index === this.currentLayout) option.classList.add('active');
+                    
+                    // Create mini preview of layout
+                    layout.forEach(frame => {
+                        const miniFrame = document.createElement('div');
+                        miniFrame.style.position = 'absolute';
+                        miniFrame.style.left = `${frame.x * 100}%`;
+                        miniFrame.style.top = `${frame.y * 100}%`;
+                        miniFrame.style.width = `${frame.width * 100}%`;
+                        miniFrame.style.height = `${frame.height * 100}%`;
+                        miniFrame.style.background = '#4a90e2';
+                        miniFrame.style.border = '1px solid white';
+                        option.appendChild(miniFrame);
+                    });
+                    
+                    option.addEventListener('click', () => {
+                        document.querySelectorAll('.layout-option').forEach(opt => opt.classList.remove('active'));
+                        option.classList.add('active');
+                        this.currentLayout = index;
+                        this.generateFrames();
+                    });
+                    
+                    layoutContainer.appendChild(option);
+                });
+            }
+            
+            handleImageUpload(files) {
+                Array.from(files).forEach(file => {
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            const img = new Image();
+                            img.onload = () => {
+                                this.images.push(img);
+                                this.updateImageGrid();
+                            };
+                            img.src = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+            
+            updateImageGrid() {
+                const grid = document.getElementById('imageGrid');
+                grid.innerHTML = '';
+                
+                this.images.forEach((img, index) => {
+                    const thumbnail = document.createElement('img');
+                    thumbnail.src = img.src;
+                    thumbnail.className = 'image-thumbnail';
+                    thumbnail.draggable = true;
+                    
+                    thumbnail.addEventListener('click', () => {
+                        this.assignImageToFrame(img, index);
+                    });
+                    
+                    grid.appendChild(thumbnail);
+                });
+            }
+            
+            assignImageToFrame(img, imgIndex) {
+                const emptyFrame = this.frames.find(frame => !frame.image);
+                if (emptyFrame) {
+                    emptyFrame.image = img;
+                    emptyFrame.scale = 1;
+                    emptyFrame.offsetX = 0;
+                    emptyFrame.offsetY = 0;
+                    
+                    emptyFrame.element.innerHTML = '';
+                    emptyFrame.element.classList.add('has-image');
+                    
+                    const frameImg = document.createElement('img');
+                    frameImg.src = img.src;
+                    frameImg.className = 'frame-image';
+                    frameImg.draggable = false;
+                    
+                    emptyFrame.element.appendChild(frameImg);
+                    this.updateImageTransform(emptyFrame);
+                }
+            }
+            
+            updateImageTransform(frame) {
+                if (frame.image && frame.element.querySelector('.frame-image')) {
+                    const img = frame.element.querySelector('.frame-image');
+                    img.style.transform = `scale(${frame.scale}) translate(${frame.offsetX}px, ${frame.offsetY}px)`;
+                }
+            }
+            
+            handleMouseDown(e) {
+                const frame = e.target.closest('.image-frame');
+                if (frame && frame.classList.contains('has-image')) {
+                    this.dragState = {
+                        frame: this.frames[parseInt(frame.dataset.index)],
+                        startX: e.clientX,
+                        startY: e.clientY,
+                        startOffsetX: this.frames[parseInt(frame.dataset.index)].offsetX,
+                        startOffsetY: this.frames[parseInt(frame.dataset.index)].offsetY
+                    };
+                    e.preventDefault();
+                }
+            }
+            
+            handleMouseMove(e) {
+                if (this.dragState) {
+                    const deltaX = e.clientX - this.dragState.startX;
+                    const deltaY = e.clientY - this.dragState.startY;
+                    
+                    this.dragState.frame.offsetX = this.dragState.startOffsetX + deltaX / this.dragState.frame.scale;
+                    this.dragState.frame.offsetY = this.dragState.startOffsetY + deltaY / this.dragState.frame.scale;
+                    
+                    this.updateImageTransform(this.dragState.frame);
+                    e.preventDefault();
+                }
+            }
+            
+            handleMouseUp() {
+                this.dragState = null;
+            }
+            
+            handleWheel(e) {
+                const frame = e.target.closest('.image-frame');
+                if (frame && frame.classList.contains('has-image')) {
+                    e.preventDefault();
+                    const frameData = this.frames[parseInt(frame.dataset.index)];
+                    const scaleFactor = e.deltaY > 0 ? 0.9 : 1.1;
+                    frameData.scale = Math.max(0.1, Math.min(3, frameData.scale * scaleFactor));
+                    this.updateImageTransform(frameData);
+                }
+            }
+            
+            downloadCollage() {
+                // Create a temporary canvas for export
+                const exportCanvas = document.createElement('canvas');
+                const ctx = exportCanvas.getContext('2d');
+                const dimensions = this.getCanvasDimensions();
+                
+                exportCanvas.width = dimensions.width;
+                exportCanvas.height = dimensions.height;
+                
+                // Fill background
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, dimensions.width, dimensions.height);
+                
+                // Draw each frame
+                this.frames.forEach(frame => {
+                    if (frame.image) {
+                        const rect = frame.element.getBoundingClientRect();
+                        const canvasRect = this.canvas.getBoundingClientRect();
+                        
+                        const x = (rect.left - canvasRect.left);
+                        const y = (rect.top - canvasRect.top);
+                        const width = rect.width;
+                        const height = rect.height;
+                        
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.rect(x, y, width, height);
+                        ctx.clip();
+                        
+                        ctx.translate(x + width/2, y + height/2);
+                        ctx.scale(frame.scale, frame.scale);
+                        ctx.translate(frame.offsetX, frame.offsetY);
+                        
+                        const imgAspect = frame.image.width / frame.image.height;
+                        const frameAspect = width / height;
+                        
+                        let drawWidth, drawHeight;
+                        if (imgAspect > frameAspect) {
+                            drawHeight = height;
+                            drawWidth = height * imgAspect;
+                        } else {
+                            drawWidth = width;
+                            drawHeight = width / imgAspect;
+                        }
+                        
+                        ctx.drawImage(frame.image, -drawWidth/2, -drawHeight/2, drawWidth, drawHeight);
+                        ctx.restore();
+                    }
+                });
+                
+                // Download
+                const link = document.createElement('a');
+                link.download = `collage_${this.format}_${Date.now()}.png`;
+                link.href = exportCanvas.toDataURL();
+                link.click();
+            }
+        }
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            new CollageCreator();
+        });
+    </script>
+</body>
+</html>
