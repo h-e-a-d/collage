@@ -775,7 +775,7 @@ class CollageCreator {
         
         if (this.exportFormat === 'jpeg') {
             mimeType = 'image/jpeg';
-            quality = 0.92; // High quality JPEG
+            quality = 1.0; // Maximum quality for near-lossless JPEG
             extension = 'jpg';
         }
         
@@ -823,19 +823,19 @@ class CollageCreator {
                 ctx.scale(frame.scale, frame.scale);
                 ctx.translate(frame.offsetX, frame.offsetY);
                 
-                // Calculate image dimensions to fill frame (cover behavior)
+                // Calculate image dimensions to fit in frame (contain behavior like CSS)
                 const imgAspect = frame.image.naturalWidth / frame.image.naturalHeight;
                 const frameAspect = frameRect.width / frameRect.height;
                 
                 let drawWidth, drawHeight;
                 if (imgAspect > frameAspect) {
-                    // Image is wider than frame - fit to height
-                    drawHeight = frameRect.height;
-                    drawWidth = drawHeight * imgAspect;
-                } else {
-                    // Image is taller than frame - fit to width
+                    // Image is wider than frame - fit to width
                     drawWidth = frameRect.width;
                     drawHeight = drawWidth / imgAspect;
+                } else {
+                    // Image is taller than frame - fit to height
+                    drawHeight = frameRect.height;
+                    drawWidth = drawHeight * imgAspect;
                 }
                 
                 // Draw image centered
@@ -845,7 +845,7 @@ class CollageCreator {
         });
         
         // Convert canvas to image data
-        const imgData = exportCanvas.toDataURL('image/jpeg', 0.95);
+        const imgData = exportCanvas.toDataURL('image/jpeg', 1.0);
         
         // Create PDF
         const { jsPDF } = window.jspdf;
