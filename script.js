@@ -219,6 +219,33 @@ class CollageCreator {
                 frameImg.className = 'frame-image';
                 frameImg.draggable = false;
                 
+                // Add zoom controls
+                const zoomControls = document.createElement('div');
+                zoomControls.className = 'zoom-controls';
+                
+                const zoomInBtn = document.createElement('div');
+                zoomInBtn.className = 'zoom-btn';
+                zoomInBtn.innerHTML = '+';
+                zoomInBtn.title = 'Zoom in';
+                zoomInBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    frame.scale = Math.min(3, frame.scale * 1.1);
+                    this.updateImageTransform(frame);
+                });
+                
+                const zoomOutBtn = document.createElement('div');
+                zoomOutBtn.className = 'zoom-btn';
+                zoomOutBtn.innerHTML = '−';
+                zoomOutBtn.title = 'Zoom out';
+                zoomOutBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    frame.scale = Math.max(0.1, frame.scale * 0.9);
+                    this.updateImageTransform(frame);
+                });
+                
+                zoomControls.appendChild(zoomInBtn);
+                zoomControls.appendChild(zoomOutBtn);
+                
                 // Add remove button
                 const removeBtn = document.createElement('div');
                 removeBtn.className = 'remove-btn';
@@ -230,6 +257,7 @@ class CollageCreator {
                 });
                 
                 frame.element.appendChild(frameImg);
+                frame.element.appendChild(zoomControls);
                 frame.element.appendChild(removeBtn);
                 this.updateImageTransform(frame);
             }
@@ -612,6 +640,33 @@ class CollageCreator {
         frameImg.className = 'frame-image';
         frameImg.draggable = false;
         
+        // Add zoom controls
+        const zoomControls = document.createElement('div');
+        zoomControls.className = 'zoom-controls';
+        
+        const zoomInBtn = document.createElement('div');
+        zoomInBtn.className = 'zoom-btn';
+        zoomInBtn.innerHTML = '+';
+        zoomInBtn.title = 'Zoom in';
+        zoomInBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            frame.scale = Math.min(3, frame.scale * 1.1);
+            this.updateImageTransform(frame);
+        });
+        
+        const zoomOutBtn = document.createElement('div');
+        zoomOutBtn.className = 'zoom-btn';
+        zoomOutBtn.innerHTML = '−';
+        zoomOutBtn.title = 'Zoom out';
+        zoomOutBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            frame.scale = Math.max(0.1, frame.scale * 0.9);
+            this.updateImageTransform(frame);
+        });
+        
+        zoomControls.appendChild(zoomInBtn);
+        zoomControls.appendChild(zoomOutBtn);
+        
         // Add remove button
         const removeBtn = document.createElement('div');
         removeBtn.className = 'remove-btn';
@@ -623,6 +678,7 @@ class CollageCreator {
         });
         
         frame.element.appendChild(frameImg);
+        frame.element.appendChild(zoomControls);
         frame.element.appendChild(removeBtn);
         this.updateImageTransform(frame);
         console.log('Image successfully set to frame');
@@ -651,8 +707,10 @@ class CollageCreator {
     }
     
     handleMouseDown(e) {
-        // Don't start dragging if clicking on remove button
-        if (e.target.classList.contains('remove-btn')) {
+        // Don't start dragging if clicking on control buttons
+        if (e.target.classList.contains('remove-btn') || 
+            e.target.classList.contains('zoom-btn') ||
+            e.target.closest('.zoom-controls')) {
             return;
         }
         
@@ -687,8 +745,10 @@ class CollageCreator {
     }
     
     handleWheel(e) {
-        // Don't zoom if hovering over remove button
-        if (e.target.classList.contains('remove-btn')) {
+        // Don't zoom if hovering over control buttons
+        if (e.target.classList.contains('remove-btn') || 
+            e.target.classList.contains('zoom-btn') ||
+            e.target.closest('.zoom-controls')) {
             return;
         }
         
