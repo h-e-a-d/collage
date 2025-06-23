@@ -325,6 +325,29 @@ class CollageCreator {
                     { x: 0.5, y: 0.5, width: 0.5, height: 0.5 }
                 ]
             ],
+            5: [
+                [
+                    { x: 0, y: 0, width: 0.6, height: 0.8 },
+                    { x: 0.6, y: 0, width: 0.4, height: 0.4 },
+                    { x: 0.6, y: 0.4, width: 0.4, height: 0.4 },
+                    { x: 0, y: 0.8, width: 0.5, height: 0.2 },
+                    { x: 0.5, y: 0.8, width: 0.5, height: 0.2 }
+                ],
+                [
+                    { x: 0, y: 0, width: 1, height: 0.4 },
+                    { x: 0, y: 0.4, width: 0.25, height: 0.6 },
+                    { x: 0.25, y: 0.4, width: 0.25, height: 0.6 },
+                    { x: 0.5, y: 0.4, width: 0.25, height: 0.6 },
+                    { x: 0.75, y: 0.4, width: 0.25, height: 0.6 }
+                ],
+                [
+                    { x: 0, y: 0, width: 0.33, height: 0.6 },
+                    { x: 0.33, y: 0, width: 0.34, height: 0.6 },
+                    { x: 0.67, y: 0, width: 0.33, height: 0.6 },
+                    { x: 0, y: 0.6, width: 0.5, height: 0.4 },
+                    { x: 0.5, y: 0.6, width: 0.5, height: 0.4 }
+                ]
+            ],
             6: [
                 [
                     { x: 0, y: 0, width: 0.5, height: 0.6 },
@@ -339,6 +362,35 @@ class CollageCreator {
                     { x: 0.4, y: 0, width: 0.3, height: 0.33 },
                     { x: 0.7, y: 0, width: 0.3, height: 0.33 },
                     { x: 0.4, y: 0.33, width: 0.6, height: 0.34 },
+                    { x: 0.4, y: 0.67, width: 0.3, height: 0.33 },
+                    { x: 0.7, y: 0.67, width: 0.3, height: 0.33 }
+                ]
+            ],
+            7: [
+                [
+                    { x: 0, y: 0, width: 0.5, height: 0.7 },
+                    { x: 0.5, y: 0, width: 0.25, height: 0.35 },
+                    { x: 0.75, y: 0, width: 0.25, height: 0.35 },
+                    { x: 0.5, y: 0.35, width: 0.25, height: 0.35 },
+                    { x: 0.75, y: 0.35, width: 0.25, height: 0.35 },
+                    { x: 0, y: 0.7, width: 0.5, height: 0.3 },
+                    { x: 0.5, y: 0.7, width: 0.5, height: 0.3 }
+                ],
+                [
+                    { x: 0, y: 0, width: 0.5, height: 0.5 },
+                    { x: 0.5, y: 0, width: 0.5, height: 0.5 },
+                    { x: 0, y: 0.5, width: 0.2, height: 0.5 },
+                    { x: 0.2, y: 0.5, width: 0.2, height: 0.5 },
+                    { x: 0.4, y: 0.5, width: 0.2, height: 0.5 },
+                    { x: 0.6, y: 0.5, width: 0.2, height: 0.5 },
+                    { x: 0.8, y: 0.5, width: 0.2, height: 0.5 }
+                ],
+                [
+                    { x: 0, y: 0, width: 0.4, height: 1 },
+                    { x: 0.4, y: 0, width: 0.3, height: 0.33 },
+                    { x: 0.7, y: 0, width: 0.3, height: 0.33 },
+                    { x: 0.4, y: 0.33, width: 0.3, height: 0.34 },
+                    { x: 0.7, y: 0.33, width: 0.3, height: 0.34 },
                     { x: 0.4, y: 0.67, width: 0.3, height: 0.33 },
                     { x: 0.7, y: 0.67, width: 0.3, height: 0.33 }
                 ]
