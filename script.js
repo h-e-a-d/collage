@@ -583,7 +583,23 @@ class CollageCreator {
     setImageToFrame(img, frame) {
         console.log('Setting image to frame');
         frame.image = img;
-        frame.scale = 1;
+        
+        // Calculate initial scale to fit the image properly in the frame
+        const frameRect = frame.frameRect;
+        const imgAspect = img.naturalWidth / img.naturalHeight;
+        const frameAspect = frameRect.width / frameRect.height;
+        
+        // Calculate scale to fit the entire image in the frame (like object-fit: contain)
+        let initialScale;
+        if (imgAspect > frameAspect) {
+            // Image is wider - scale to fit width
+            initialScale = 1;
+        } else {
+            // Image is taller - scale to fit height  
+            initialScale = 1;
+        }
+        
+        frame.scale = initialScale;
         frame.offsetX = 0;
         frame.offsetY = 0;
         
@@ -731,19 +747,19 @@ class CollageCreator {
                 ctx.scale(frame.scale, frame.scale);
                 ctx.translate(frame.offsetX, frame.offsetY);
                 
-                // Calculate image dimensions to fill frame (cover behavior)
+                // Calculate image dimensions to fit in frame (contain behavior like CSS)
                 const imgAspect = frame.image.naturalWidth / frame.image.naturalHeight;
                 const frameAspect = frameRect.width / frameRect.height;
                 
                 let drawWidth, drawHeight;
                 if (imgAspect > frameAspect) {
-                    // Image is wider than frame - fit to height
-                    drawHeight = frameRect.height;
-                    drawWidth = drawHeight * imgAspect;
-                } else {
-                    // Image is taller than frame - fit to width
+                    // Image is wider than frame - fit to width
                     drawWidth = frameRect.width;
                     drawHeight = drawWidth / imgAspect;
+                } else {
+                    // Image is taller than frame - fit to height
+                    drawHeight = frameRect.height;
+                    drawWidth = drawHeight * imgAspect;
                 }
                 
                 // Draw image centered
