@@ -229,7 +229,7 @@ class CollageCreator {
                 zoomInBtn.title = 'Zoom in';
                 zoomInBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    frame.scale = Math.min(3, frame.scale * 1.1);
+                    frame.scale = Math.min(3, frame.scale * 1.05);
                     this.updateImageTransform(frame);
                 });
                 
@@ -239,7 +239,7 @@ class CollageCreator {
                 zoomOutBtn.title = 'Zoom out';
                 zoomOutBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    frame.scale = Math.max(0.1, frame.scale * 0.9);
+                    frame.scale = Math.max(0.1, frame.scale * 0.95);
                     this.updateImageTransform(frame);
                 });
                 
@@ -650,7 +650,7 @@ class CollageCreator {
         zoomInBtn.title = 'Zoom in';
         zoomInBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            frame.scale = Math.min(3, frame.scale * 1.1);
+            frame.scale = Math.min(3, frame.scale * 1.05);
             this.updateImageTransform(frame);
         });
         
@@ -660,7 +660,7 @@ class CollageCreator {
         zoomOutBtn.title = 'Zoom out';
         zoomOutBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            frame.scale = Math.max(0.1, frame.scale * 0.9);
+            frame.scale = Math.max(0.1, frame.scale * 0.95);
             this.updateImageTransform(frame);
         });
         
