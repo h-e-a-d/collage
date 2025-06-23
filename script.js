@@ -687,6 +687,14 @@ class CollageCreator {
     }
     
     downloadCollage() {
+        if (this.exportFormat === 'pdf') {
+            this.downloadCollagePDF();
+        } else {
+            this.downloadCollageImage();
+        }
+    }
+    
+    downloadCollageImage() {
         // Create a temporary canvas for export
         const exportCanvas = document.createElement('canvas');
         const ctx = exportCanvas.getContext('2d');
@@ -760,6 +768,103 @@ class CollageCreator {
         link.download = `collage_${this.format}_${this.orientation}_${Date.now()}.${extension}`;
         link.href = exportCanvas.toDataURL(mimeType, quality);
         link.click();
+    }
+    
+    downloadCollagePDF() {
+        // Create a temporary canvas for export
+        const exportCanvas = document.createElement('canvas');
+        const ctx = exportCanvas.getContext('2d');
+        const dimensions = this.getCanvasDimensions();
+        
+        // Set high resolution for better quality
+        const scale = 3; // Higher resolution for PDF
+        exportCanvas.width = dimensions.width * scale;
+        exportCanvas.height = dimensions.height * scale;
+        ctx.scale(scale, scale);
+        
+        // Fill background
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, dimensions.width, dimensions.height);
+        
+        // Draw each frame
+        this.frames.forEach(frame => {
+            if (frame.image) {
+                const frameRect = frame.frameRect;
+                
+                ctx.save();
+                ctx.beginPath();
+                ctx.rect(frameRect.x, frameRect.y, frameRect.width, frameRect.height);
+                ctx.clip();
+                
+                // Calculate center of frame
+                const centerX = frameRect.x + frameRect.width / 2;
+                const centerY = frameRect.y + frameRect.height / 2;
+                
+                // Move to center of frame
+                ctx.translate(centerX, centerY);
+                
+                // Apply scale and offset transforms
+                ctx.scale(frame.scale, frame.scale);
+                ctx.translate(frame.offsetX, frame.offsetY);
+                
+                // Calculate image dimensions to fill frame (cover behavior)
+                const imgAspect = frame.image.naturalWidth / frame.image.naturalHeight;
+                const frameAspect = frameRect.width / frameRect.height;
+                
+                let drawWidth, drawHeight;
+                if (imgAspect > frameAspect) {
+                    // Image is wider than frame - fit to height
+                    drawHeight = frameRect.height;
+                    drawWidth = drawHeight * imgAspect;
+                } else {
+                    // Image is taller than frame - fit to width
+                    drawWidth = frameRect.width;
+                    drawHeight = drawWidth / imgAspect;
+                }
+                
+                // Draw image centered
+                ctx.drawImage(frame.image, -drawWidth/2, -drawHeight/2, drawWidth, drawHeight);
+                ctx.restore();
+            }
+        });
+        
+        // Convert canvas to image data
+        const imgData = exportCanvas.toDataURL('image/jpeg', 0.95);
+        
+        // Create PDF
+        const { jsPDF } = window.jspdf;
+        
+        // Calculate PDF dimensions based on format and orientation
+        let pdfWidth, pdfHeight;
+        if (this.format === 'A4') {
+            if (this.orientation === 'portrait') {
+                pdfWidth = 210; // A4 width in mm
+                pdfHeight = 297; // A4 height in mm
+            } else {
+                pdfWidth = 297; // A4 height in mm (landscape)
+                pdfHeight = 210; // A4 width in mm (landscape)
+            }
+        } else { // A3
+            if (this.orientation === 'portrait') {
+                pdfWidth = 297; // A3 width in mm
+                pdfHeight = 420; // A3 height in mm
+            } else {
+                pdfWidth = 420; // A3 height in mm (landscape)
+                pdfHeight = 297; // A3 width in mm (landscape)
+            }
+        }
+        
+        const pdf = new jsPDF({
+            orientation: this.orientation === 'portrait' ? 'p' : 'l',
+            unit: 'mm',
+            format: this.format.toLowerCase()
+        });
+        
+        // Add the image to PDF, filling the entire page
+        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+        
+        // Download PDF
+        pdf.save(`collage_${this.format}_${this.orientation}_${Date.now()}.pdf`);
     }
 }
 
