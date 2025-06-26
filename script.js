@@ -98,30 +98,14 @@ class CollageCreator {
     
     toggleHorizontalFlip() {
         this.horizontalFlip = !this.horizontalFlip;
-        this.updateCanvasTransform();
+        this.generateFrames();
         this.updateFlipButtonStates();
     }
     
     toggleVerticalFlip() {
         this.verticalFlip = !this.verticalFlip;
-        this.updateCanvasTransform();
+        this.generateFrames();
         this.updateFlipButtonStates();
-    }
-    
-    updateCanvasTransform() {
-        let transform = '';
-        
-        if (this.horizontalFlip && this.verticalFlip) {
-            transform = 'scaleX(-1) scaleY(-1)';
-        } else if (this.horizontalFlip) {
-            transform = 'scaleX(-1)';
-        } else if (this.verticalFlip) {
-            transform = 'scaleY(-1)';
-        } else {
-            transform = 'none';
-        }
-        
-        this.canvas.style.transform = transform;
     }
     
     updateFlipButtonStates() {
@@ -197,14 +181,26 @@ class CollageCreator {
             frame.className = 'image-frame';
             frame.dataset.index = index;
             
-            const x = frameData.x * dimensions.width;
-            const y = frameData.y * dimensions.height;
+            // Apply flipping to frame coordinates
+            let x = frameData.x;
+            let y = frameData.y;
+            
+            if (this.horizontalFlip) {
+                x = 1 - (frameData.x + frameData.width);
+            }
+            
+            if (this.verticalFlip) {
+                y = 1 - (frameData.y + frameData.height);
+            }
+            
+            const finalX = x * dimensions.width;
+            const finalY = y * dimensions.height;
             const width = frameData.width * dimensions.width;
             const height = frameData.height * dimensions.height;
             
             frame.style.position = 'absolute';
-            frame.style.left = `${x + this.borderThickness}px`;
-            frame.style.top = `${y + this.borderThickness}px`;
+            frame.style.left = `${finalX + this.borderThickness}px`;
+            frame.style.top = `${finalY + this.borderThickness}px`;
             frame.style.width = `${width - 2 * this.borderThickness}px`;
             frame.style.height = `${height - 2 * this.borderThickness}px`;
             frame.style.borderWidth = `${this.borderThickness}px`;
@@ -249,8 +245,8 @@ class CollageCreator {
                 offsetX: 0,
                 offsetY: 0,
                 frameRect: {
-                    x: x + this.borderThickness,
-                    y: y + this.borderThickness,
+                    x: finalX + this.borderThickness,
+                    y: finalY + this.borderThickness,
                     width: width - 2 * this.borderThickness,
                     height: height - 2 * this.borderThickness
                 }
@@ -449,150 +445,6 @@ class CollageCreator {
                     { x: 0.7, y: 0.33, width: 0.3, height: 0.34 },
                     { x: 0.4, y: 0.67, width: 0.3, height: 0.33 },
                     { x: 0.7, y: 0.67, width: 0.3, height: 0.33 }
-                ]
-            ],
-            8: [
-                [
-                    { x: 0, y: 0, width: 0.4, height: 0.6 },
-                    { x: 0.4, y: 0, width: 0.3, height: 0.3 },
-                    { x: 0.7, y: 0, width: 0.3, height: 0.3 },
-                    { x: 0.4, y: 0.3, width: 0.6, height: 0.3 },
-                    { x: 0, y: 0.6, width: 0.25, height: 0.4 },
-                    { x: 0.25, y: 0.6, width: 0.25, height: 0.4 },
-                    { x: 0.5, y: 0.6, width: 0.25, height: 0.4 },
-                    { x: 0.75, y: 0.6, width: 0.25, height: 0.4 }
-                ],
-                [
-                    { x: 0, y: 0, width: 0.6, height: 0.4 },
-                    { x: 0.6, y: 0, width: 0.2, height: 0.2 },
-                    { x: 0.8, y: 0, width: 0.2, height: 0.2 },
-                    { x: 0.6, y: 0.2, width: 0.2, height: 0.2 },
-                    { x: 0.8, y: 0.2, width: 0.2, height: 0.2 },
-                    { x: 0, y: 0.4, width: 0.3, height: 0.6 },
-                    { x: 0.3, y: 0.4, width: 0.35, height: 0.6 },
-                    { x: 0.65, y: 0.4, width: 0.35, height: 0.6 }
-                ]
-            ],
-            9: [
-                [
-                    { x: 0, y: 0, width: 0.5, height: 0.5 },
-                    { x: 0.5, y: 0, width: 0.25, height: 0.25 },
-                    { x: 0.75, y: 0, width: 0.25, height: 0.25 },
-                    { x: 0.5, y: 0.25, width: 0.25, height: 0.25 },
-                    { x: 0.75, y: 0.25, width: 0.25, height: 0.25 },
-                    { x: 0, y: 0.5, width: 0.3, height: 0.5 },
-                    { x: 0.3, y: 0.5, width: 0.35, height: 0.5 },
-                    { x: 0.65, y: 0.5, width: 0.35, height: 0.25 },
-                    { x: 0.65, y: 0.75, width: 0.35, height: 0.25 }
-                ],
-                [
-                    { x: 0, y: 0, width: 0.4, height: 0.7 },
-                    { x: 0.4, y: 0, width: 0.3, height: 0.35 },
-                    { x: 0.7, y: 0, width: 0.3, height: 0.35 },
-                    { x: 0.4, y: 0.35, width: 0.6, height: 0.35 },
-                    { x: 0, y: 0.7, width: 0.25, height: 0.3 },
-                    { x: 0.25, y: 0.7, width: 0.25, height: 0.3 },
-                    { x: 0.5, y: 0.7, width: 0.2, height: 0.3 },
-                    { x: 0.7, y: 0.7, width: 0.15, height: 0.3 },
-                    { x: 0.85, y: 0.7, width: 0.15, height: 0.3 }
-                ]
-            ],
-            10: [
-                [
-                    { x: 0, y: 0, width: 0.6, height: 0.6 },
-                    { x: 0.6, y: 0, width: 0.2, height: 0.2 },
-                    { x: 0.8, y: 0, width: 0.2, height: 0.2 },
-                    { x: 0.6, y: 0.2, width: 0.2, height: 0.2 },
-                    { x: 0.8, y: 0.2, width: 0.2, height: 0.2 },
-                    { x: 0.6, y: 0.4, width: 0.4, height: 0.2 },
-                    { x: 0, y: 0.6, width: 0.2, height: 0.4 },
-                    { x: 0.2, y: 0.6, width: 0.2, height: 0.4 },
-                    { x: 0.4, y: 0.6, width: 0.3, height: 0.4 },
-                    { x: 0.7, y: 0.6, width: 0.3, height: 0.4 }
-                ],
-                [
-                    { x: 0, y: 0, width: 0.5, height: 0.4 },
-                    { x: 0.5, y: 0, width: 0.25, height: 0.2 },
-                    { x: 0.75, y: 0, width: 0.25, height: 0.2 },
-                    { x: 0.5, y: 0.2, width: 0.5, height: 0.2 },
-                    { x: 0, y: 0.4, width: 0.2, height: 0.3 },
-                    { x: 0.2, y: 0.4, width: 0.2, height: 0.3 },
-                    { x: 0.4, y: 0.4, width: 0.2, height: 0.3 },
-                    { x: 0.6, y: 0.4, width: 0.2, height: 0.3 },
-                    { x: 0.8, y: 0.4, width: 0.2, height: 0.3 },
-                    { x: 0, y: 0.7, width: 1, height: 0.3 }
-                ]
-            ],
-            11: [
-                [
-                    { x: 0, y: 0, width: 0.5, height: 0.5 },
-                    { x: 0.5, y: 0, width: 0.25, height: 0.25 },
-                    { x: 0.75, y: 0, width: 0.25, height: 0.25 },
-                    { x: 0.5, y: 0.25, width: 0.5, height: 0.25 },
-                    { x: 0, y: 0.5, width: 0.2, height: 0.25 },
-                    { x: 0.2, y: 0.5, width: 0.2, height: 0.25 },
-                    { x: 0.4, y: 0.5, width: 0.2, height: 0.25 },
-                    { x: 0.6, y: 0.5, width: 0.2, height: 0.25 },
-                    { x: 0.8, y: 0.5, width: 0.2, height: 0.25 },
-                    { x: 0, y: 0.75, width: 0.5, height: 0.25 },
-                    { x: 0.5, y: 0.75, width: 0.5, height: 0.25 }
-                ],
-                [
-                    { x: 0, y: 0, width: 0.4, height: 0.6 },
-                    { x: 0.4, y: 0, width: 0.3, height: 0.3 },
-                    { x: 0.7, y: 0, width: 0.3, height: 0.3 },
-                    { x: 0.4, y: 0.3, width: 0.6, height: 0.3 },
-                    { x: 0, y: 0.6, width: 0.25, height: 0.2 },
-                    { x: 0.25, y: 0.6, width: 0.25, height: 0.2 },
-                    { x: 0.5, y: 0.6, width: 0.25, height: 0.2 },
-                    { x: 0.75, y: 0.6, width: 0.25, height: 0.2 },
-                    { x: 0, y: 0.8, width: 0.2, height: 0.2 },
-                    { x: 0.2, y: 0.8, width: 0.4, height: 0.2 },
-                    { x: 0.6, y: 0.8, width: 0.4, height: 0.2 }
-                ]
-            ],
-            12: [
-                [
-                    { x: 0, y: 0, width: 0.33, height: 0.25 },
-                    { x: 0.33, y: 0, width: 0.34, height: 0.25 },
-                    { x: 0.67, y: 0, width: 0.33, height: 0.25 },
-                    { x: 0, y: 0.25, width: 0.33, height: 0.25 },
-                    { x: 0.33, y: 0.25, width: 0.34, height: 0.25 },
-                    { x: 0.67, y: 0.25, width: 0.33, height: 0.25 },
-                    { x: 0, y: 0.5, width: 0.33, height: 0.25 },
-                    { x: 0.33, y: 0.5, width: 0.34, height: 0.25 },
-                    { x: 0.67, y: 0.5, width: 0.33, height: 0.25 },
-                    { x: 0, y: 0.75, width: 0.33, height: 0.25 },
-                    { x: 0.33, y: 0.75, width: 0.34, height: 0.25 },
-                    { x: 0.67, y: 0.75, width: 0.33, height: 0.25 }
-                ],
-                [
-                    { x: 0, y: 0, width: 0.5, height: 0.4 },
-                    { x: 0.5, y: 0, width: 0.25, height: 0.2 },
-                    { x: 0.75, y: 0, width: 0.25, height: 0.2 },
-                    { x: 0.5, y: 0.2, width: 0.5, height: 0.2 },
-                    { x: 0, y: 0.4, width: 0.2, height: 0.3 },
-                    { x: 0.2, y: 0.4, width: 0.2, height: 0.3 },
-                    { x: 0.4, y: 0.4, width: 0.2, height: 0.3 },
-                    { x: 0.6, y: 0.4, width: 0.2, height: 0.3 },
-                    { x: 0.8, y: 0.4, width: 0.2, height: 0.3 },
-                    { x: 0, y: 0.7, width: 0.25, height: 0.3 },
-                    { x: 0.25, y: 0.7, width: 0.25, height: 0.3 },
-                    { x: 0.5, y: 0.7, width: 0.5, height: 0.3 }
-                ],
-                [
-                    { x: 0, y: 0, width: 0.25, height: 0.33 },
-                    { x: 0.25, y: 0, width: 0.25, height: 0.33 },
-                    { x: 0.5, y: 0, width: 0.25, height: 0.33 },
-                    { x: 0.75, y: 0, width: 0.25, height: 0.33 },
-                    { x: 0, y: 0.33, width: 0.25, height: 0.34 },
-                    { x: 0.25, y: 0.33, width: 0.25, height: 0.34 },
-                    { x: 0.5, y: 0.33, width: 0.25, height: 0.34 },
-                    { x: 0.75, y: 0.33, width: 0.25, height: 0.34 },
-                    { x: 0, y: 0.67, width: 0.25, height: 0.33 },
-                    { x: 0.25, y: 0.67, width: 0.25, height: 0.33 },
-                    { x: 0.5, y: 0.67, width: 0.25, height: 0.33 },
-                    { x: 0.75, y: 0.67, width: 0.25, height: 0.33 }
                 ]
             ]
         };
@@ -890,18 +742,6 @@ class CollageCreator {
         exportCanvas.height = dimensions.height * scale;
         ctx.scale(scale, scale);
         
-        // Apply flips to the context if needed
-        if (this.horizontalFlip || this.verticalFlip) {
-            ctx.translate(
-                this.horizontalFlip ? dimensions.width : 0,
-                this.verticalFlip ? dimensions.height : 0
-            );
-            ctx.scale(
-                this.horizontalFlip ? -1 : 1,
-                this.verticalFlip ? -1 : 1
-            );
-        }
-        
         // Fill background
         ctx.fillStyle = 'white';
         ctx.fillRect(0, 0, dimensions.width, dimensions.height);
@@ -977,18 +817,6 @@ class CollageCreator {
         exportCanvas.width = dimensions.width * scale;
         exportCanvas.height = dimensions.height * scale;
         ctx.scale(scale, scale);
-        
-        // Apply flips to the context if needed
-        if (this.horizontalFlip || this.verticalFlip) {
-            ctx.translate(
-                this.horizontalFlip ? dimensions.width : 0,
-                this.verticalFlip ? dimensions.height : 0
-            );
-            ctx.scale(
-                this.horizontalFlip ? -1 : 1,
-                this.verticalFlip ? -1 : 1
-            );
-        }
         
         // Fill background
         ctx.fillStyle = 'white';
