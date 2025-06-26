@@ -11,6 +11,8 @@ class CollageCreator {
         this.imageCount = 4;
         this.exportFormat = 'png';
         this.dragState = null;
+        this.horizontalFlip = false;
+        this.verticalFlip = false;
         
         console.log('Canvas element:', this.canvas);
         
@@ -52,6 +54,15 @@ class CollageCreator {
             this.exportFormat = e.target.value;
         });
         
+        // Flip controls
+        document.getElementById('flipHorizontal').addEventListener('click', () => {
+            this.toggleHorizontalFlip();
+        });
+        
+        document.getElementById('flipVertical').addEventListener('click', () => {
+            this.toggleVerticalFlip();
+        });
+        
         // File upload
         const fileInput = document.getElementById('imageUpload');
         fileInput.addEventListener('change', (e) => {
@@ -83,6 +94,51 @@ class CollageCreator {
         // Prevent default drag behaviors on canvas
         this.canvas.addEventListener('dragover', (e) => e.preventDefault());
         this.canvas.addEventListener('drop', (e) => e.preventDefault());
+    }
+    
+    toggleHorizontalFlip() {
+        this.horizontalFlip = !this.horizontalFlip;
+        this.updateCanvasTransform();
+        this.updateFlipButtonStates();
+    }
+    
+    toggleVerticalFlip() {
+        this.verticalFlip = !this.verticalFlip;
+        this.updateCanvasTransform();
+        this.updateFlipButtonStates();
+    }
+    
+    updateCanvasTransform() {
+        let transform = '';
+        
+        if (this.horizontalFlip && this.verticalFlip) {
+            transform = 'scaleX(-1) scaleY(-1)';
+        } else if (this.horizontalFlip) {
+            transform = 'scaleX(-1)';
+        } else if (this.verticalFlip) {
+            transform = 'scaleY(-1)';
+        } else {
+            transform = 'none';
+        }
+        
+        this.canvas.style.transform = transform;
+    }
+    
+    updateFlipButtonStates() {
+        const horizontalBtn = document.getElementById('flipHorizontal');
+        const verticalBtn = document.getElementById('flipVertical');
+        
+        if (this.horizontalFlip) {
+            horizontalBtn.classList.add('active');
+        } else {
+            horizontalBtn.classList.remove('active');
+        }
+        
+        if (this.verticalFlip) {
+            verticalBtn.classList.add('active');
+        } else {
+            verticalBtn.classList.remove('active');
+        }
     }
     
     getCanvasDimensions() {
@@ -834,6 +890,18 @@ class CollageCreator {
         exportCanvas.height = dimensions.height * scale;
         ctx.scale(scale, scale);
         
+        // Apply flips to the context if needed
+        if (this.horizontalFlip || this.verticalFlip) {
+            ctx.translate(
+                this.horizontalFlip ? dimensions.width : 0,
+                this.verticalFlip ? dimensions.height : 0
+            );
+            ctx.scale(
+                this.horizontalFlip ? -1 : 1,
+                this.verticalFlip ? -1 : 1
+            );
+        }
+        
         // Fill background
         ctx.fillStyle = 'white';
         ctx.fillRect(0, 0, dimensions.width, dimensions.height);
@@ -909,6 +977,18 @@ class CollageCreator {
         exportCanvas.width = dimensions.width * scale;
         exportCanvas.height = dimensions.height * scale;
         ctx.scale(scale, scale);
+        
+        // Apply flips to the context if needed
+        if (this.horizontalFlip || this.verticalFlip) {
+            ctx.translate(
+                this.horizontalFlip ? dimensions.width : 0,
+                this.verticalFlip ? dimensions.height : 0
+            );
+            ctx.scale(
+                this.horizontalFlip ? -1 : 1,
+                this.verticalFlip ? -1 : 1
+            );
+        }
         
         // Fill background
         ctx.fillStyle = 'white';
