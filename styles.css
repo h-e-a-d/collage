@@ -15,7 +15,394 @@ body {
     max-width: 1400px;
     margin: 0 auto;
     background: white;
+    border-radius: 15px;* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    background: white;
     border-radius: 15px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    overflow: hidden;
+    margin-top: 20px;
+}
+
+.header {
+    background: linear-gradient(45deg, #4a90e2, #357abd);
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+.header h1 {
+    margin-bottom: 10px;
+    font-size: 2.5em;
+    font-weight: 300;
+}
+
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 25px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    align-items: center;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.control-group label {
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.9em;
+}
+
+select, input[type="range"], input[type="file"] {
+    padding: 8px 12px;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+
+select:focus, input:focus {
+    outline: none;
+    border-color: #4a90e2;
+}
+
+input[type="range"] {
+    width: 150px;
+    accent-color: #4a90e2;
+}
+
+.file-upload {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+    background: #4a90e2;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.file-upload:hover {
+    background: #357abd;
+}
+
+.file-upload input[type="file"] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.flip-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.flip-btn {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    min-width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.flip-btn:hover {
+    background: #5a6268;
+    transform: scale(1.05);
+}
+
+.flip-btn.active {
+    background: #4a90e2;
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
+}
+
+.flip-btn.active:hover {
+    background: #357abd;
+}
+
+.flip-btn span {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.workspace {
+    display: flex;
+    gap: 20px;
+    padding: 25px;
+    min-height: 600px;
+}
+
+.canvas-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+    position: relative;
+}
+
+.collage-canvas {
+    background: white;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    cursor: crosshair;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+    transform-origin: center center;
+}
+
+.image-frame {
+    position: absolute;
+    background: #f0f0f0;
+    overflow: hidden;
+    cursor: grab;
+    border: 2px solid #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: #666;
+    user-select: none;
+    transition: all 0.3s ease;
+}
+
+.image-frame.has-image {
+    background: none;
+    color: transparent;
+    position: relative;
+}
+
+.image-frame:active {
+    cursor: grabbing;
+}
+
+.image-frame.drag-over {
+    border-color: #4a90e2 !important;
+    background-color: #e3f2fd !important;
+    transform: scale(1.02);
+}
+
+.remove-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 24px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+    color: #666;
+    z-index: 10;
+    transition: all 0.2s ease;
+    opacity: 0;
+}
+
+.zoom-controls {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 10;
+}
+
+.zoom-btn {
+    width: 24px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+    color: #666;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.zoom-btn:hover {
+    background: #4a90e2;
+    color: white;
+    border-color: #4a90e2;
+    transform: scale(1.1);
+}
+
+.image-frame.has-image:hover .remove-btn,
+.image-frame.has-image:hover .zoom-controls {
+    opacity: 1;
+}
+
+.remove-btn:hover {
+    background: #ff4757;
+    color: white;
+    border-color: #ff4757;
+    transform: scale(1.1);
+}
+
+.frame-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.1s ease;
+    background: #f8f9fa;
+    transform-origin: center center;
+}
+
+.sidebar {
+    width: 250px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.sidebar h3 {
+    margin-bottom: 15px;
+    color: #495057;
+    font-size: 1.1em;
+}
+
+.image-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.image-thumbnail {
+    width: 100%;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.image-thumbnail:hover {
+    border-color: #4a90e2;
+    transform: scale(1.05);
+}
+
+.image-thumbnail:active {
+    transform: scale(0.95);
+}
+
+.layout-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.layout-option {
+    aspect-ratio: 1;
+    background: #dee2e6;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.layout-option:hover {
+    border-color: #4a90e2;
+    transform: scale(1.05);
+}
+
+.layout-option.active {
+    border-color: #4a90e2;
+    background: #e3f2fd;
+}
+
+.value-display {
+    font-size: 0.8em;
+    color: #6c757d;
+    margin-top: 2px;
+}
+
+.download-btn {
+    width: 100%;
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-top: 20px;
+}
+
+.download-btn:hover {
+    background: #218838;
+}
+
+@media (max-width: 768px) {
+    .workspace {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+    }
+    
+    .controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .flip-controls {
+        justify-content: center;
+    }
+}
     box-shadow: 0 20px 40px rgba(0,0,0,0.1);
     overflow: hidden;
     margin-top: 20px;
